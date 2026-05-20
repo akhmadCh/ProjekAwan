@@ -47,4 +47,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function subscriptions() {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function buckets() {
+        return $this->hasMany(Bucket::class);
+    }
+
+    public function credentials() {
+        return $this->hasOne(Credential::class); // Biasanya 1 user punya 1 set key
+    }
 }

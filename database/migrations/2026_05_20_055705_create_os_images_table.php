@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('credentials', function (Blueprint $table) {
+        Schema::create('os_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('access_key')->unique();
-            $table->string('secret_key');
-            $table->timestamps();
+            $table->string('name', 100);
+            $table->string('os_family', 50);
+            $table->string('version', 50);
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('credentials');
+        Schema::dropIfExists('os_images');
     }
 };
