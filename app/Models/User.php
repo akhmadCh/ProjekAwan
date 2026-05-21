@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -48,15 +50,23 @@ class User extends Authenticatable
         ];
     }
 
-    public function subscriptions() {
+    public function credentials(): HasOne
+    {
+        return $this->hasOne(Credential::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
         return $this->hasMany(UserSubscription::class);
     }
 
-    public function buckets() {
-        return $this->hasMany(Bucket::class);
+    public function resources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
     }
 
-    public function credentials() {
-        return $this->hasOne(Credential::class); 
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Log::class);
     }
 }

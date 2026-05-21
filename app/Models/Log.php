@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Credential extends Model
+class Log extends Model
 {
+    const CREATED_AT = 'logged_at';
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'user_id',
-        'access_key',
-        'secret_key',
-    ];
-
-    protected $hidden = [
-        'secret_key', 
+        'action',
+        'target_type',
+        'target_id',
     ];
 
     public function user(): BelongsTo
