@@ -5,6 +5,24 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg text-sm flex flex-col gap-1">
+            @foreach($errors->all() as $error)
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span>{{ $error }}</span>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     <div class="mb-10">
         <a href="{{ route('dashboard') }}" class="text-sm text-blue-600 hover:underline flex items-center gap-1 mb-4">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -27,67 +45,96 @@
 
     <div class="mb-6">
         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2 mb-4">
-            <span class="w-2 h-2 rounded-full bg-green-500"></span> Active products
+            <span class="w-2 h-2 rounded-full bg-green-500"></span> Active Buckets
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <div class="flex justify-between items-start mb-6">
-                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">project-alpha.io</h4>
-                    <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+            @if($resources->isEmpty())
+                <div class="col-span-full bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
+                    <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">No Active Buckets</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Create a bucket to start uploading and storing files.</p>
+                    <button onclick="toggleModal('credentialModal')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                        Create First Bucket
                     </button>
                 </div>
+            @else
+                @foreach($resources as $resource)
+                    @php
+                        $usedMb = $resource->objects->sum('size_mb');
+                        $usedGB = round($usedMb / 1024, 4);
+                        $quotaGB = $storageData['total'];
+                    @endphp
+                    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-6">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    {{ $resource->name }}
+                                </h4>
+                                <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full">{{ ucfirst($resource->status) }}</span>
+                            </div>
 
-                <div class="space-y-4 text-sm">
-                    <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                        <span class="text-slate-500 dark:text-slate-400">Used</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">7.4 GB of 50 GB</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                        <span class="text-slate-500 dark:text-slate-400">URL</span>
-                        <a href="#" class="text-blue-600 hover:underline">https://alpha.ministack.cloud</a>
-                    </div>
-                    <div class="flex justify-between items-center pt-1">
-                        <span class="text-slate-500 dark:text-slate-400">Access key</span>
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">MINI73059C347</span>
-                            <button onclick="copyToClipboard('MINI73059C347', 'btn-key-1')" id="btn-key-1-btn" class="text-slate-400 hover:text-blue-600 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </button>
+                            <div class="space-y-4 text-sm">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <span class="text-slate-500 dark:text-slate-400">Used Storage</span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">
+                                        {{ $usedMb >= 1024 ? number_format($usedGB, 2) . ' GB' : number_format($usedMb, 2) . ' MB' }} of {{ $quotaGB }} GB
+                                    </span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <span class="text-slate-500 dark:text-slate-400">Objects Count</span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">{{ $resource->objects->count() }} files</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-slate-500 dark:text-slate-400">Access Key</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{{ auth()->user()->credentials->access_key ?? 'N/A' }}</span>
+                                        @if(auth()->user()->credentials)
+                                            <button onclick="copyToClipboard('{{ auth()->user()->credentials->access_key }}', 'btn-key-{{ $resource->id }}')" id="btn-key-{{ $resource->id }}-btn" class="text-slate-400 hover:text-blue-600 transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- List of uploaded files in this bucket -->
+                            @if($resource->objects->isNotEmpty())
+                                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                    <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Files:</h5>
+                                    <ul class="space-y-1 max-h-32 overflow-y-auto">
+                                        @foreach($resource->objects as $object)
+                                            <li class="flex justify-between items-center text-xs border-b border-slate-50 dark:border-slate-700/50 pb-1">
+                                                <span class="text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="{{ basename($object->key) }}">
+                                                    {{ basename($object->key) }}
+                                                </span>
+                                                <span class="text-slate-400 font-mono text-[10px]">
+                                                    {{ $object->size_mb >= 1 ? number_format($object->size_mb, 2) . ' MB' : number_format($object->size_mb * 1024, 2) . ' KB' }}
+                                                </span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <div class="flex justify-between items-start mb-6">
-                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">backup-storage</h4>
-                    <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
-                    </button>
-                </div>
-
-                <div class="space-y-4 text-sm">
-                    <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                        <span class="text-slate-500 dark:text-slate-400">Used</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">12.0 GB of 50 GB</span>
+                        <!-- Upload form for this bucket -->
+                        <form action="{{ route('dashboard.storage.upload') }}" method="POST" enctype="multipart/form-data" class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                            @csrf
+                            <input type="hidden" name="resource_id" value="{{ $resource->id }}">
+                            <div class="flex items-center gap-2">
+                                <input type="file" name="dokumen" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" required>
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded-lg text-xs transition duration-200 flex-shrink-0">
+                                    Upload
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                        <span class="text-slate-500 dark:text-slate-400">URL</span>
-                        <a href="#" class="text-blue-600 hover:underline">https://backup.ministack.cloud</a>
-                    </div>
-                    <div class="flex justify-between items-center pt-1">
-                        <span class="text-slate-500 dark:text-slate-400">Access key</span>
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">MINI83701G9H4</span>
-                            <button onclick="copyToClipboard('MINI83701G9H4', 'btn-key-2')" id="btn-key-2-btn" class="text-slate-400 hover:text-blue-600 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                @endforeach
+            @endif
         </div>
     </div>
 </div>
@@ -107,18 +154,19 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                         <h3 class="text-lg leading-6 font-bold text-slate-900 dark:text-white" id="modal-title">
-                            Request New Credentials
+                            Create New Storage Bucket
                         </h3>
                         <div class="mt-2">
                             <p class="text-sm text-slate-500 dark:text-slate-400">
-                                Create a new storage bucket to generate a fresh Access Key and Secret Key for your API integration.
+                                Enter a unique name for your new storage bucket. S3 bucket names must be lowercase, alphanumeric, and may contain hyphens or dots.
                             </p>
                         </div>
 
-                        <form class="mt-5 space-y-4">
+                        <form id="create-bucket-form" action="{{ route('dashboard.storage.buckets.store') }}" method="POST" class="mt-5 space-y-4">
+                            @csrf
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Bucket Name</label>
-                                <input type="text" placeholder="e.g., my-app-assets" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                                <input type="text" name="bucket_name" placeholder="e.g., my-app-assets" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Access Level</label>
@@ -133,8 +181,8 @@
                 </div>
             </div>
             <div class="bg-slate-50 dark:bg-slate-700/30 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-200 dark:border-slate-700">
-                <button type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition">
-                    Generate Credentials
+                <button type="submit" form="create-bucket-form" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                    Create Bucket
                 </button>
                 <button type="button" onclick="toggleModal('credentialModal')" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
                     Cancel
