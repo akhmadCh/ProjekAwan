@@ -27,3 +27,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/storage', [DashboardController::class, 'storage'])->name('dashboard.storage');
     Route::get('/dashboard/subscription', [DashboardController::class, 'subscription'])->name('dashboard.subscription');
 });
+
+Route::get('/test-ministack', function() {
+    try {
+        // Tulis file ke MiniStack S3 emulator
+        Illuminate\Support\Facades\Storage::disk('s3')->put('test-file.txt', 'Halo dari Laravel ProjekAwan ke MiniStack!');
+        
+        // Ambil kembali file tersebut
+        $content = Illuminate\Support\Facades\Storage::disk('s3')->get('test-file.txt');
+        
+        return "Integrasi Sukses! Isi file: " . $content;
+    } catch (\Exception $e) {
+        return "Integrasi Gagal. Pesan Eror: " . $e->getMessage();
+    }
+});
