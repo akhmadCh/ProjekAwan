@@ -28,7 +28,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/dashboard/storage/buckets', [DashboardController::class, 'storeBucket'])->name('dashboard.storage.buckets.store');
     Route::post('/dashboard/storage/upload', [DashboardController::class, 'uploadObject'])->name('dashboard.storage.upload');
     Route::get('/dashboard/subscription', [DashboardController::class, 'subscription'])->name('dashboard.subscription');
+    Route::post('/dashboard/subscription/orders', [DashboardController::class, 'createSubscriptionOrder'])->name('dashboard.subscription.orders.store');
+    Route::post('/dashboard/subscription/orders/sync', [DashboardController::class, 'syncSubscriptionOrder'])->name('dashboard.subscription.orders.sync');
 });
+
+Route::post('/midtrans/notification', [DashboardController::class, 'handleMidtransNotification'])->name('midtrans.notification');
 
 Route::get('/test-ministack', function() {
     try {

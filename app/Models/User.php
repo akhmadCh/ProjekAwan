@@ -60,6 +60,11 @@ class User extends Authenticatable
         return $this->hasMany(UserSubscription::class);
     }
 
+    public function subscriptionOrders(): HasMany
+    {
+        return $this->hasMany(SubscriptionOrder::class);
+    }
+
     public function resources(): HasMany
     {
         return $this->hasMany(Resource::class);

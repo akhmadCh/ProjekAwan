@@ -11,7 +11,7 @@ class SubscriptionPackage extends Model
 
     protected $fillable = [
         'name',
-        'quota_limit_gb',
+        'storage_quota_gb',
         'price_per_month',
         'description',
     ];
@@ -19,5 +19,10 @@ class SubscriptionPackage extends Model
     public function userSubscriptions(): HasMany
     {
         return $this->hasMany(UserSubscription::class, 'package_id');
+    }
+
+    public function subscriptionOrders(): HasMany
+    {
+        return $this->hasMany(SubscriptionOrder::class, 'subscription_package_id');
     }
 }
