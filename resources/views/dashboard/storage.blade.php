@@ -49,7 +49,7 @@
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @if($resources->isEmpty())
+            @if(empty($buckets))
                 <div class="col-span-full bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
                     <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -61,9 +61,16 @@
                     </button>
                 </div>
             @else
-                @foreach($resources as $resource)
+                @foreach($buckets as $bucket)
                     @php
-                        $usedMb = $resource->objects->sum('size_mb');
+                        $usedMb = 0;
+                        $objectCount = 0;
+                        if (!empty($bucket->objects)) {
+                            foreach ($bucket->objects as $obj) {
+                                $usedMb += $obj->size_mb;
+                            }
+                            $objectCount = count($bucket->objects);
+                        }
                         $usedGB = round($usedMb / 1024, 4);
                         $quotaGB = $storageData['total'];
                     @endphp
@@ -72,9 +79,9 @@
                             <div class="flex justify-between items-start mb-6">
                                 <h4 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                    {{ $resource->name }}
+                                    {{ $bucket->bucket_name }}
                                 </h4>
-                                <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full">{{ ucfirst($resource->status) }}</span>
+                                <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full">{{ ucfirst($bucket->resource_status) }}</span>
                             </div>
 
                             <div class="space-y-4 text-sm">
@@ -86,14 +93,14 @@
                                 </div>
                                 <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
                                     <span class="text-slate-500 dark:text-slate-400">Objects Count</span>
-                                    <span class="font-semibold text-slate-900 dark:text-white">{{ $resource->objects->count() }} files</span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">{{ $objectCount }} files</span>
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
                                     <span class="text-slate-500 dark:text-slate-400">Access Key</span>
                                     <div class="flex items-center gap-2">
-                                        <span class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{{ auth()->user()->credentials->access_key ?? 'N/A' }}</span>
-                                        @if(auth()->user()->credentials)
-                                            <button onclick="copyToClipboard('{{ auth()->user()->credentials->access_key }}', 'btn-key-{{ $resource->id }}')" id="btn-key-{{ $resource->id }}-btn" class="text-slate-400 hover:text-blue-600 transition">
+                                        <span class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{{ $credentials->access_key ?? 'N/A' }}</span>
+                                        @if($credentials)
+                                            <button onclick="copyToClipboard('{{ $credentials->access_key }}', 'btn-key-{{ $bucket->id }}')" id="btn-key-{{ $bucket->id }}-btn" class="text-slate-400 hover:text-blue-600 transition">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                                             </button>
                                         @endif
@@ -102,14 +109,14 @@
                             </div>
 
                             <!-- List of uploaded files in this bucket -->
-                            @if($resource->objects->isNotEmpty())
+                            @if(!empty($bucket->objects) && count($bucket->objects) > 0)
                                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                                     <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Files:</h5>
                                     <ul class="space-y-1 max-h-32 overflow-y-auto">
-                                        @foreach($resource->objects as $object)
+                                        @foreach($bucket->objects as $object)
                                             <li class="flex justify-between items-center text-xs border-b border-slate-50 dark:border-slate-700/50 pb-1">
-                                                <span class="text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="{{ basename($object->key) }}">
-                                                    {{ basename($object->key) }}
+                                                <span class="text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="{{ $object->original_filename ?? basename($object->object_key) }}">
+                                                    {{ $object->original_filename ?? basename($object->object_key) }}
                                                 </span>
                                                 <span class="text-slate-400 font-mono text-[10px]">
                                                     {{ $object->size_mb >= 1 ? number_format($object->size_mb, 2) . ' MB' : number_format($object->size_mb * 1024, 2) . ' KB' }}
@@ -124,7 +131,7 @@
                         <!-- Upload form for this bucket -->
                         <form action="{{ route('dashboard.storage.upload') }}" method="POST" enctype="multipart/form-data" class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                             @csrf
-                            <input type="hidden" name="resource_id" value="{{ $resource->id }}">
+                            <input type="hidden" name="bucket_id" value="{{ $bucket->id }}">
                             <div class="flex items-center gap-2">
                                 <input type="file" name="dokumen" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" required>
                                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded-lg text-xs transition duration-200 flex-shrink-0">

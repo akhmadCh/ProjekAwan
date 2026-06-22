@@ -7,9 +7,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * Model User — tetap Eloquent karena dibutuhkan oleh Laravel Auth system.
+ * Semua query business logic lain menggunakan raw SQL via UserRepository.
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -25,6 +27,8 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'role',
+        'status',
     ];
 
     /**
@@ -50,28 +54,25 @@ class User extends Authenticatable
         ];
     }
 
-    public function credentials(): HasOne
+    /* ---- Helper Methods ---- */
+
+    public function isAdmin(): bool
     {
-        return $this->hasOne(Credential::class);
+        return $this->role === 'admin';
     }
 
-    public function subscriptions(): HasMany
+    public function isCustomer(): bool
     {
-        return $this->hasMany(UserSubscription::class);
+        return $this->role === 'customer';
     }
 
-    public function subscriptionOrders(): HasMany
+    public function isActive(): bool
     {
-        return $this->hasMany(SubscriptionOrder::class);
+        return $this->status === 'active';
     }
 
-    public function resources(): HasMany
+    public function isSuspended(): bool
     {
-        return $this->hasMany(Resource::class);
-    }
-
-    public function logs(): HasMany
-    {
-        return $this->hasMany(Log::class);
+        return $this->status === 'suspended';
     }
 }

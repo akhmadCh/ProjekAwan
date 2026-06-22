@@ -163,7 +163,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <a href="{{ route('dashboard.storage') }}" class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 group cursor-pointer">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-bold text-lg">View Storage</h4>
@@ -172,6 +172,16 @@
                     </svg>
                 </div>
                 <p class="text-sm text-slate-600 dark:text-slate-400">Manage and monitor your storage usage</p>
+            </a>
+
+            <a href="{{ route('dashboard.resources') }}" class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 group cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-bold text-lg">Resources</h4>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-400">Manage compute and network resources</p>
             </a>
 
             <a href="{{ route('dashboard.subscription') }}" class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 group cursor-pointer">

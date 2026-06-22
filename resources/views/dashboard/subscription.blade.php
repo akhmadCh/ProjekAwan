@@ -48,7 +48,7 @@
                                 class="package-card focus:outline-none text-left rounded-xl border-2 p-5 transition {{ $isCurrent ? 'is-current border-slate-700 bg-slate-900/40 dark:bg-slate-900/40' : ($isSelectable ? 'is-selectable border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-slate-700' : 'border-slate-700/60 bg-slate-900/40 opacity-60 cursor-not-allowed') }} {{ $isSelectable ? 'cursor-pointer' : 'cursor-not-allowed' }}"
                                 data-package-id="{{ $package->id }}"
                                 data-package-name="{{ $package->name }}"
-                                data-package-storage="{{ number_format($package->storage_quota_gb, 0) }} GB"
+                                data-package-storage="{{ number_format($package->storage_limit_gb, 0) }} GB"
                                 data-package-price="Rp {{ number_format($package->price_per_month, 0, ',', '.') }}"
                                 data-package-raw-price="{{ (int) round($package->price_per_month) }}"
                                 data-package-upgrade="{{ $isSelectable ? '1' : '0' }}"
@@ -66,8 +66,11 @@
                                     @endif
                                 </div>
                                 <div class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
-                                    <div>{{ number_format($package->storage_quota_gb, 0) }} GB storage</div>
-                                    <div>Rp {{ number_format($package->price_per_month, 0, ',', '.') }} / month</div>
+                                    <div>{{ number_format($package->storage_limit_gb, 0) }} GB storage</div>
+                                    <div>{{ $package->max_buckets }} max buckets</div>
+                                    <div>{{ $package->vcpu_limit }} vCPU · {{ $package->ram_limit_mb }} MB RAM</div>
+                                    <div>{{ number_format($package->bandwidth_limit_gb, 0) }} GB bandwidth</div>
+                                    <div class="font-semibold mt-2">Rp {{ number_format($package->price_per_month, 0, ',', '.') }} / month</div>
                                 </div>
                                 @if (! $isSelectable)
                                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
@@ -88,7 +91,7 @@
                         <div class="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-3">
                             <div>
                                 <div class="font-semibold text-slate-900 dark:text-white">{{ $order->order_id }}</div>
-                                <div class="text-sm text-slate-500">{{ $order->package->name ?? '-' }}</div>
+                                <div class="text-sm text-slate-500">{{ $order->package_name ?? '-' }}</div>
                             </div>
                             <div class="text-right">
                                 <div class="font-semibold text-slate-900 dark:text-white">Rp {{ number_format($order->gross_amount, 0, ',', '.') }}</div>

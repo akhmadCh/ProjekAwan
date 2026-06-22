@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,29 +22,28 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Protected Routes (Authenticated Users Only)
-Route::middleware('auth')->group(function () {
+// Protected Routes (Authenticated + Active Users Only)
+Route::middleware(['auth', 'active'])->group(function () {
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Storage
     Route::get('/dashboard/storage', [DashboardController::class, 'storage'])->name('dashboard.storage');
     Route::post('/dashboard/storage/buckets', [DashboardController::class, 'storeBucket'])->name('dashboard.storage.buckets.store');
     Route::post('/dashboard/storage/upload', [DashboardController::class, 'uploadObject'])->name('dashboard.storage.upload');
+
+    // Subscription
     Route::get('/dashboard/subscription', [DashboardController::class, 'subscription'])->name('dashboard.subscription');
     Route::post('/dashboard/subscription/orders', [DashboardController::class, 'createSubscriptionOrder'])->name('dashboard.subscription.orders.store');
     Route::post('/dashboard/subscription/orders/sync', [DashboardController::class, 'syncSubscriptionOrder'])->name('dashboard.subscription.orders.sync');
+
+    // Resources (Compute & Network)
+    Route::get('/dashboard/resources', [ResourceController::class, 'index'])->name('dashboard.resources');
+    Route::post('/dashboard/resources', [ResourceController::class, 'store'])->name('dashboard.resources.store');
+    Route::get('/dashboard/resources/{id}', [ResourceController::class, 'show'])->name('dashboard.resources.show');
+    Route::post('/dashboard/resources/{id}/start', [ResourceController::class, 'start'])->name('dashboard.resources.start');
+    Route::post('/dashboard/resources/{id}/stop', [ResourceController::class, 'stop'])->name('dashboard.resources.stop');
 });
 
+// Midtrans Webhook (no CSRF, no auth)
 Route::post('/midtrans/notification', [DashboardController::class, 'handleMidtransNotification'])->name('midtrans.notification');
-
-Route::get('/test-ministack', function() {
-    try {
-        // Tulis file ke MiniStack S3 emulator
-        Illuminate\Support\Facades\Storage::disk('s3')->put('test-file.txt', 'Halo dari Laravel ProjekAwan ke MiniStack!');
-        
-        // Ambil kembali file tersebut
-        $content = Illuminate\Support\Facades\Storage::disk('s3')->get('test-file.txt');
-        
-        return "Integrasi Sukses! Isi file: " . $content;
-    } catch (\Exception $e) {
-        return "Integrasi Gagal. Pesan Eror: " . $e->getMessage();
-    }
-});

@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Controller untuk autentikasi: login, register, logout.
+ */
 class AuthController extends Controller
 {
     /**
@@ -39,6 +42,13 @@ class AuthController extends Controller
             ]);
         }
 
+        // Cek apakah user suspended
+        if ($user->status === 'suspended') {
+            throw ValidationException::withMessages([
+                'username' => 'Akun Anda telah disuspend. Hubungi administrator.',
+            ]);
+        }
+
         Auth::login($user, $request->boolean('remember'));
 
         return redirect('/dashboard')->with('success', 'Logged in successfully!');
@@ -53,18 +63,23 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle registration logic
+     * Handle registration logic.
+     * Sekarang menerima email terpisah dan set role+status default.
      */
     public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ], [
             'name.required' => 'Name is required',
             'username.required' => 'Username is required',
             'username.unique' => 'Username already exists',
+            'email.required' => 'Email is required',
+            'email.email' => 'Please enter a valid email address',
+            'email.unique' => 'Email already exists',
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 6 characters',
             'password.confirmed' => 'Password confirmation does not match',
@@ -73,8 +88,10 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'username' => $validated['username'],
-            'email' => $validated['username'] . '@example.com',
+            'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => 'customer',
+            'status' => 'active',
         ]);
 
         Auth::login($user);

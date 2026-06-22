@@ -28,6 +28,7 @@
                 <div class="hidden md:flex items-center gap-8">
                     <a href="{{ route('dashboard') }}" class="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Dashboard</a>
                     <a href="{{ route('dashboard.storage') }}" class="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Storage</a>
+                    <a href="{{ route('dashboard.resources') }}" class="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Resources</a>
                     <a href="{{ route('dashboard.subscription') }}" class="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Subscription</a>
                 </div>
 
