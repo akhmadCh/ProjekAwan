@@ -131,20 +131,34 @@ class DashboardController extends Controller
     {
         $request->validate([
             'bucket_id' => 'required|integer',
-            'dokumen' => 'required|file|max:20480',
+            'dokumen' => 'required|array',
+            'dokumen.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,zip,txt',
+        ], [
+            'dokumen.required' => 'Anda harus memilih minimal 1 file.',
+            'dokumen.file' => 'File yang dipilih tidak valid.',
+            'dokumen.max' => 'Ukuran file tidak boleh lebih dari 20MB.',
+            'dokumen.mimes' => 'Format file tidak diizinkan.',
         ]);
 
-        try {
-            $this->storageService->uploadObject(
-                Auth::id(),
-                (int) $request->input('bucket_id'),
-                $request->file('dokumen')
-            );
+        $files = $request->file('dokumen');
 
-            return redirect()->back()->with('success', 'File berhasil disimpan di MiniStack Cloud Emulator!');
-        } catch (RuntimeException $e) {
-            return redirect()->back()->withErrors(['dokumen' => $e->getMessage()]);
+        foreach ($files as $file) {
+            if (!$file->isValid()) {
+                return redirect()->back()->withErrors(['dokumen' => 'File yang dipilih tidak valid.']);
+            }
+
+            try {
+                $this->storageService->uploadObject(
+                    Auth::id(),
+                    (int) $request->input('bucket_id'),
+                    $file
+                );
+            } catch (RuntimeException $e) {
+                return redirect()->back()->withErrors(['dokumen' => $e->getMessage()]);
+            }
         }
+        $count = count($request->file('dokumen'));
+        return redirect()->back()->with('success', "{$count} file berhasil diupload.");
     }
 
     /**
@@ -198,6 +212,48 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Notification processed']);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], $e->getMessage() === 'Invalid signature' ? 403 : 404);
+        }
+    }
+
+    /**
+     * Hapus file dari bucket.
+     */
+    public function deleteObject(Request $request)
+    {
+        $request->validate([
+            'object_id' => 'required|integer',
+        ]);
+
+        try {
+            $this->storageService->deleteObject(
+                Auth::id(),
+                (int) $request->input('object_id')
+            );
+
+            return redirect()->back()->with('success', 'File berhasil dihapus dari MiniStack Cloud Emulator!');
+        } catch (RuntimeException $e) {
+            return redirect()->back()->withErrors(['object_id' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download file dari bucket.
+     */
+    public function downloadObject(Request $request)
+    {
+        $request->validate([
+            'object_id' => 'required|integer',
+        ]);
+
+        try {
+            $this->storageService->downloadObject(
+                Auth::id(),
+                (int) $request->input('object_id')
+            );
+
+            return redirect()->back()->with('success', 'File berhasil diunduh dari MiniStack Cloud Emulator!');
+        } catch (RuntimeException $e) {
+            return redirect()->back()->withErrors(['object_id' => $e->getMessage()]);
         }
     }
 }

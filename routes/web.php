@@ -31,7 +31,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard/storage', [DashboardController::class, 'storage'])->name('dashboard.storage');
     Route::post('/dashboard/storage/buckets', [DashboardController::class, 'storeBucket'])->name('dashboard.storage.buckets.store');
     Route::post('/dashboard/storage/upload', [DashboardController::class, 'uploadObject'])->name('dashboard.storage.upload');
-
+    Route::delete('/dashboard/storage/delete/{id}', [DashboardController::class, 'deleteObject'])->name('dashboard.storage.objects.delete');
+    Route::get('/dashboard/storage/download/{id}', [DashboardController::class, 'downloadObject'])->name('dashboard.storage.objects.download');
+    
     // Subscription
     Route::get('/dashboard/subscription', [DashboardController::class, 'subscription'])->name('dashboard.subscription');
     Route::post('/dashboard/subscription/orders', [DashboardController::class, 'createSubscriptionOrder'])->name('dashboard.subscription.orders.store');

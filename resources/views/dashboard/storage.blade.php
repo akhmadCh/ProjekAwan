@@ -133,7 +133,7 @@
                             @csrf
                             <input type="hidden" name="bucket_id" value="{{ $bucket->id }}">
                             <div class="flex items-center gap-2">
-                                <input type="file" name="dokumen" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" required>
+                                <input type="file" name="dokumen[]" multiple class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" required>
                                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded-lg text-xs transition duration-200 flex-shrink-0">
                                     Upload
                                 </button>
@@ -223,5 +223,20 @@
             modal.classList.add('hidden');
         }
     }
+
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function () {
+            const maxSize = 20 * 1024 * 1024;
+
+            for (const file of this.files) {
+                if (file.size > maxSize) {
+                    alert('Ukuran file maksimal adalah 20 MB.');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+    });
+
 </script>
 @endpush
