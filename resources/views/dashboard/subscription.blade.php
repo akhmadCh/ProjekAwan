@@ -254,6 +254,9 @@
             const payload = await response.json();
 
             if (!response.ok) {
+                alert("Checkout Gagal: " + (payload.message || "Terjadi kesalahan sistem."));
+                console.error("Detail Eror:", payload);
+                
                 checkoutButton.disabled = false;
                 return;
             }

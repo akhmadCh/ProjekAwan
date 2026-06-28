@@ -8,6 +8,8 @@ use App\Repositories\UserSubscriptionRepository;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
+use App\Models\User;
+
 /**
  * Service untuk lifecycle subscription:
  * - Validasi upgrade
@@ -69,7 +71,10 @@ class SubscriptionService
         }
 
         $targetPackage = SubscriptionPackageRepository::findById($packageId);
-        $user = DB::selectOne('SELECT * FROM users WHERE id = ?', [$userId]);
+
+        // $user = DB::selectOne('SELECT * FROM users WHERE id = ?', [$userId]);
+        $user = User::find($userId);
+
         $orderId = $this->midtransService->generateOrderId($userId, $packageId);
 
         // Insert order
@@ -85,16 +90,23 @@ class SubscriptionService
 
         // Buat transaksi Midtrans
         try {
-            // Buat object sementara untuk Midtrans
-            $orderObj = (object) [
-                'order_id' => $order->order_id,
-                'gross_amount' => $order->gross_amount,
-                'subscription_package_id' => $order->subscription_package_id,
-            ];
-            $orderObj->package = $targetPackage;
-            $orderObj->user = $user;
+            // // Buat object sementara untuk Midtrans
+            // $orderObj = (object) [
+            //     'order_id' => $order->order_id,
+            //     'gross_amount' => $order->gross_amount,
+            //     'subscription_package_id' => $order->subscription_package_id,
+            // ];
+            // $orderObj->package = $targetPackage;
+            // $orderObj->user = $user;
 
-            $snapResponse = $this->midtransService->createSnapTransaction($orderObj);
+            // $snapResponse = $this->midtransService->createSnapTransaction($orderObj);
+
+            // Langsung pasang relasi tambahan ke model asli agar tipe data tidak rusak
+            $order->package = $targetPackage;
+            $order->user = $user;
+
+            // Kirim model asli yang tipenya valid (SubscriptionOrder)
+            $snapResponse = $this->midtransService->createSnapTransaction($order);
         } catch (\Throwable $e) {
             SubscriptionOrderRepository::update($id, [
                 'transaction_status' => 'failed',

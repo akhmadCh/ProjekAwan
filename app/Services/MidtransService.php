@@ -20,7 +20,7 @@ class MidtransService
         return $serverKey;
     }
 
-    public function createSnapTransaction(SubscriptionOrder $order): array
+    public function createSnapTransaction(object $order): array
     {
         $serverKey = $this->ensureServerKeyIsConfigured();
 
